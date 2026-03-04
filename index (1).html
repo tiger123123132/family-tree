@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">حلاقة الأصالة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#C9A84C;--gold2:#E8C97A;--dark:#080808;--dark2:#111111;
+  --dark3:#1a1a1a;--dark4:#252525;--dark5:#2e2e2e;
+  --text:#f0ede8;--muted:#777;--green:#2ecc71;--red:#e74c3c;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--dark);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ══ SCREENS ══ */
+.screen{display:none!important}
+.screen.active{display:block!important}
+
+/* ══ HERO ══ */
+#heroScreen{min-height:100vh;display:none!important;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;position:relative;overflow:hidden}
+#heroScreen.active{display:flex!important}
+#heroScreen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 90% 55% at 50% 0%,rgba(201,168,76,.15),transparent 65%)}
+.gridbg{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(201,168,76,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.04) 1px,transparent 1px);background-size:50px 50px}
+.hero-badge{display:inline-block;border:1px solid rgba(201,168,76,.4);padding:.3rem 1.1rem;border-radius:50px;font-size:.78rem;color:var(--gold);margin-bottom:1.5rem;letter-spacing:2px;animation:fu .6s ease both;position:relative}
+#heroTitle{font-size:clamp(2.8rem,8vw,5.5rem);font-weight:900;line-height:1.05;background:linear-gradient(135deg,var(--gold2),var(--gold),#9a7020);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.5rem;animation:fu .6s .1s ease both;opacity:0;position:relative}
+#heroSub{color:var(--muted);font-size:.95rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:2.5rem;animation:fu .6s .2s ease both;opacity:0;position:relative}
+.hero-btn{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--dark);border:none;padding:1rem 3rem;font-size:1.05rem;font-family:'Cairo',sans-serif;font-weight:800;border-radius:50px;cursor:pointer;box-shadow:0 0 40px rgba(201,168,76,.35);transition:all .3s;animation:fu .6s .3s ease both;opacity:0;position:relative}
+.hero-btn:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 12px 50px rgba(201,168,76,.5)}
+@keyframes fu{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ BOOKING ══ */
+#bookingScreen .inner{max-width:680px;margin:0 auto;padding:3rem 1.5rem 6rem}
+.progress{display:flex;align-items:center;justify-content:center;gap:.4rem;margin-bottom:3rem}
+.pdot{height:8px;border-radius:4px;background:var(--dark5);width:8px;transition:all .35s}
+.pdot.active{background:var(--gold);width:28px}
+.pdot.done{background:rgba(201,168,76,.4)}
+.step{display:none;animation:fu .3s ease}
+.step.active{display:block}
+.sec-title{font-size:1.35rem;font-weight:800;color:var(--gold);text-align:center;margin-bottom:1.8rem}
+
+/* Services */
+.svc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.9rem;margin-bottom:1.8rem}
+.svc-card{background:var(--dark3);border:2px solid var(--dark5);border-radius:16px;padding:1.3rem 1rem;cursor:pointer;text-align:center;transition:all .25s;position:relative;overflow:hidden}
+.svc-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,168,76,.1),transparent);opacity:0;transition:.25s}
+.svc-card:hover::after,.svc-card.sel::after{opacity:1}
+.svc-card.sel{border-color:var(--gold);box-shadow:0 0 22px rgba(201,168,76,.2)}
+.svc-card .ico{font-size:2rem;display:block;margin-bottom:.5rem}
+.svc-card .sname{font-weight:700;font-size:.9rem}
+.svc-card .sprice{color:var(--gold);font-size:.85rem;font-weight:700;margin-top:.25rem}
+.svc-card .sdur{color:var(--muted);font-size:.75rem;margin-top:.1rem}
+
+/* Inputs */
+.fg{margin-bottom:1.2rem}
+.fg label{display:block;color:var(--muted);font-size:.83rem;margin-bottom:.4rem}
+.fi{width:100%;background:var(--dark3);border:1.5px solid var(--dark5);border-radius:11px;padding:.8rem 1rem;color:var(--text);font-family:'Cairo',sans-serif;font-size:.93rem;transition:.2s;direction:rtl}
+.fi:focus{outline:none;border-color:var(--gold);box-shadow:0 0 12px rgba(201,168,76,.1)}
+select.fi option{background:var(--dark3)}
+
+/* Time slots */
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:.55rem;margin-bottom:1.5rem}
+.slot{background:var(--dark3);border:1.5px solid var(--dark5);border-radius:10px;padding:.5rem;text-align:center;cursor:pointer;font-family:'Cairo',sans-serif;color:var(--text);font-size:.86rem;transition:.2s}
+.slot:hover{border-color:var(--gold)}
+.slot.sel{background:var(--gold);color:var(--dark);font-weight:800;border-color:var(--gold)}
+.slot.taken{opacity:.3;cursor:not-allowed;text-decoration:line-through;pointer-events:none}
+
+/* Coupon */
+.cpnrow{display:flex;gap:.6rem;margin-bottom:.4rem}
+.cpnrow .fi{flex:1}
+.btn-apply{background:transparent;border:1.5px solid var(--gold);color:var(--gold);padding:0 1.1rem;border-radius:11px;cursor:pointer;font-family:'Cairo',sans-serif;font-weight:700;white-space:nowrap;transition:.2s;font-size:.88rem}
+.btn-apply:hover{background:rgba(201,168,76,.1)}
+.cpnmsg{font-size:.8rem;min-height:1.1rem;margin-bottom:.8rem}
+.cpnmsg.ok{color:var(--green)}.cpnmsg.err{color:var(--red)}
+
+/* Summary */
+.sumbox{background:var(--dark3);border:1px solid var(--dark5);border-radius:15px;padding:1.3rem;margin-bottom:1.4rem}
+.srow{display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid var(--dark5);font-size:.9rem}
+.srow:last-child{border-bottom:none}
+.srow.total{font-weight:800;font-size:1rem;color:var(--gold)}
+.srow.disc{color:var(--green)}
+
+/* Nav btns */
+.fnav{display:flex;gap:.7rem;margin-top:1.4rem}
+.btn-next{flex:1;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--dark);border:none;padding:.85rem 1.5rem;font-family:'Cairo',sans-serif;font-weight:800;font-size:.93rem;border-radius:11px;cursor:pointer;transition:.25s}
+.btn-next:hover{transform:translateY(-2px);box-shadow:0 6px 25px rgba(201,168,76,.35)}
+.btn-next:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-back{background:transparent;border:1.5px solid var(--dark5);color:var(--muted);padding:.85rem 1.3rem;font-family:'Cairo',sans-serif;font-size:.93rem;border-radius:11px;cursor:pointer;transition:.2s}
+.btn-back:hover{border-color:var(--muted);color:var(--text)}
+
+/* ══ SUCCESS ══ */
+#successScreen{text-align:center;padding:5rem 2rem}
+.sico{font-size:5rem;display:block;margin-bottom:1.2rem;animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+#successScreen h2{font-size:1.9rem;color:var(--gold);margin-bottom:.8rem}
+#successScreen p{color:var(--muted);margin-bottom:.4rem}
+
+/* ══ PASSWORD ══ */
+#pwScreen{display:none!important;min-height:100vh;align-items:center;justify-content:center;padding:2rem}
+#pwScreen.active{display:flex!important}
+.pwbox{background:var(--dark3);border:1px solid var(--dark4);border-radius:20px;padding:2.5rem;width:100%;max-width:360px;text-align:center}
+.pwbox span.big{font-size:3rem;display:block;margin-bottom:1rem}
+.pwbox h2{color:var(--gold);font-size:1.3rem;margin-bottom:.4rem}
+.pwbox p{color:var(--muted);font-size:.85rem;margin-bottom:1.5rem}
+.pwerr{color:var(--red);font-size:.83rem;margin-top:.6rem;min-height:1.2rem}
+
+/* ══ ADMIN ══ */
+#adminScreen{display:none!important}
+#adminScreen.active{display:flex!important;min-height:100vh}
+.aside{width:230px;background:var(--dark2);border-left:1px solid var(--dark4);padding:1.6rem 1.1rem;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0}
+.aside-logo{font-size:1rem;font-weight:900;color:var(--gold);margin-bottom:2rem;display:flex;gap:.5rem;align-items:center}
+.navit{display:flex;align-items:center;gap:.65rem;padding:.65rem .85rem;border-radius:9px;cursor:pointer;color:var(--muted);margin-bottom:.2rem;transition:.2s;font-size:.88rem}
+.navit:hover{background:var(--dark3);color:var(--text)}
+.navit.on{background:rgba(201,168,76,.12);color:var(--gold)}
+.amain{flex:1;padding:1.8rem;min-width:0}
+.apage{display:none;animation:fu .3s ease}
+.apage.active{display:block}
+.apg-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.7rem}
+.apg-hd h2{font-size:1.3rem;font-weight:800}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;margin-bottom:1.8rem}
+.stat{background:var(--dark3);border:1px solid var(--dark4);border-radius:13px;padding:1.2rem}
+.stat .lbl{color:var(--muted);font-size:.78rem;margin-bottom:.35rem}
+.stat .val{font-size:1.7rem;font-weight:900;color:var(--gold)}
+
+.acard{background:var(--dark3);border:1px solid var(--dark4);border-radius:15px;padding:1.4rem;margin-bottom:1.4rem}
+.acard-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
+.acard-title{font-weight:700;font-size:.95rem}
+
+.twrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th,td{padding:.7rem .85rem;text-align:right;border-bottom:1px solid var(--dark4);white-space:nowrap}
+th{color:var(--muted);font-weight:600;background:var(--dark2)}
+tr:hover td{background:rgba(255,255,255,.015)}
+
+.badge{display:inline-block;padding:.15rem .6rem;border-radius:20px;font-size:.75rem;font-weight:700}
+.bg{background:rgba(201,168,76,.18);color:var(--gold)}
+.bb{background:rgba(41,128,185,.18);color:#5dade2}
+
+.irow{display:flex;align-items:center;gap:.9rem;padding:.85rem 0;border-bottom:1px solid var(--dark4)}
+.irow:last-child{border-bottom:none}
+.iico{font-size:1.7rem;flex-shrink:0}
+.iinfo{flex:1}
+.iname{font-weight:700;font-size:.9rem}
+.imeta{color:var(--muted);font-size:.78rem;margin-top:.15rem}
+.iacts{display:flex;gap:.4rem}
+
+.editrow{background:var(--dark2);border:1px solid var(--gold);border-radius:12px;padding:1rem;margin:.4rem 0;display:none}
+.editrow.on{display:block;animation:fu .2s ease}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.7rem}
+.fgrid .fg{margin-bottom:0}
+
+.btn{padding:.6rem 1.2rem;border-radius:9px;cursor:pointer;font-family:'Cairo',sans-serif;font-weight:700;font-size:.83rem;border:none;transition:.2s;white-space:nowrap}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--dark)}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(201,168,76,.3)}
+.btn-ghost{background:transparent;border:1.5px solid var(--dark5);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--muted);color:var(--text)}
+.btn-danger{background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.35);color:var(--red)}
+.btn-danger:hover{background:rgba(231,76,60,.25)}
+.btn-sm{padding:.35rem .8rem;font-size:.78rem}
+
+#toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--dark3);border:1px solid var(--gold);color:var(--text);padding:.8rem 1.8rem;border-radius:12px;font-size:.9rem;transition:.3s;z-index:9999;white-space:nowrap;pointer-events:none}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+.adm-fab{position:fixed;bottom:1.5rem;left:1.5rem;background:var(--dark3);border:1px solid var(--dark5);color:var(--muted);padding:.6rem 1rem;border-radius:10px;font-size:.8rem;font-family:'Cairo',sans-serif;cursor:pointer;transition:.2s;z-index:100}
+.adm-fab:hover{color:var(--gold);border-color:var(--gold)}
+
+@media(max-width:700px){
+  #adminScreen.active{flex-direction:column}
+  .aside{width:100%;position:static;height:auto;border-left:none;border-bottom:1px solid var(--dark4);display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;padding:1rem}
+  .aside-logo{margin-bottom:0;margin-left:auto}
+  .navit{padding:.4rem .65rem;font-size:.8rem}
+  .amain{padding:1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ══ -->
+<div id="heroScreen">
+  <div class="gridbg"></div>
+  <div class="hero-badge">✂️ &nbsp; احجز موعدك بسهولة</div>
+  <h1 id="heroTitle">حلاقة الأصالة</h1>
+  <p id="heroSub">تجربة فاخرة · مواعيد دقيقة · خدمة متميزة</p>
+  <button class="hero-btn" onclick="startBooking()">احجز الآن ✦</button>
+</div>
+
+<!-- ══ BOOKING ══ -->
+<div id="bookingScreen" class="screen">
+  <div class="inner">
+    <div class="progress">
+      <div class="pdot active" id="d1"></div>
+      <div class="pdot" id="d2"></div>
+      <div class="pdot" id="d3"></div>
+      <div class="pdot" id="d4"></div>
+    </div>
+
+    <!-- الخدمة -->
+    <div class="step active" id="s1">
+      <div class="sec-title">اختر الخدمة</div>
+      <div class="svc-grid" id="svcGrid"></div>
+      <div class="fnav">
+        <button class="btn-next" id="n1" onclick="goStep(2)" disabled>التالي ←</button>
+      </div>
+    </div>
+
+    <!-- الوقت -->
+    <div class="step" id="s2">
+      <div class="sec-title">اختر الوقت</div>
+      <div class="fg"><label>التاريخ</label><input type="date" class="fi" id="dateIn" onchange="loadSlots()"></div>
+      <div id="slotsWrap" style="display:none">
+        <label style="color:var(--muted);font-size:.83rem;display:block;margin-bottom:.6rem">الأوقات المتاحة</label>
+        <div class="slots" id="slotsEl"></div>
+      </div>
+      <div class="fnav">
+        <button class="btn-back" onclick="goStep(1)">→ رجوع</button>
+        <button class="btn-next" id="n2" onclick="goStep(3)" disabled>التالي ←</button>
+      </div>
+    </div>
+
+    <!-- البيانات -->
+    <div class="step" id="s3">
+      <div class="sec-title">بياناتك</div>
+      <div class="fg"><label>الاسم</label><input type="text" class="fi" id="nameIn" placeholder="محمد أحمد"></div>
+      <div class="fg"><label>رقم الجوال</label><input type="tel" class="fi" id="phoneIn" placeholder="05xxxxxxxx"></div>
+      <div class="fg">
+        <label>كوبون خصم (اختياري)</label>
+        <div class="cpnrow">
+          <input type="text" class="fi" id="cpnIn" placeholder="أدخل الكود">
+          <button class="btn-apply" onclick="applyCoupon()">تطبيق</button>
+        </div>
+        <div class="cpnmsg" id="cpnMsg"></div>
+      </div>
+      <div class="fnav">
+        <button class="btn-back" onclick="goStep(2)">→ رجوع</button>
+        <button class="btn-next" onclick="goStep(4)">التالي ←</button>
+      </div>
+    </div>
+
+    <!-- التأكيد -->
+    <div class="step" id="s4">
+      <div class="sec-title">تأكيد الحجز</div>
+      <div class="sumbox" id="sumEl"></div>
+      <div class="fnav">
+        <button class="btn-back" onclick="goStep(3)">→ رجوع</button>
+        <button class="btn-next" onclick="confirmBooking()">✓ تأكيد الحجز</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUCCESS ══ -->
+<div id="successScreen" class="screen">
+  <span class="sico">✅</span>
+  <h2>تم الحجز بنجاح!</h2>
+  <p id="sucDetail"></p>
+  <p style="margin-top:.8rem;font-size:.82rem;color:var(--muted)">سيتم التواصل معك للتأكيد</p>
+  <button class="hero-btn" style="margin-top:2rem;animation:none;opacity:1" onclick="resetAll()">حجز جديد</button>
+</div>
+
+<!-- ══ PASSWORD ══ -->
+<div id="pwScreen" class="screen">
+  <div class="pwbox">
+    <span class="big">🔐</span>
+    <h2>لوحة الإدارة</h2>
+    <p>أدخل كلمة المرور للدخول</p>
+    <div class="fg"><input type="password" class="fi" id="pwIn" placeholder="••••" onkeydown="if(event.key==='Enter')checkPw()"></div>
+    <button class="btn-next" style="width:100%" onclick="checkPw()">دخول</button>
+    <div class="pwerr" id="pwErr"></div>
+    <button class="btn-back" style="margin-top:.8rem;width:100%" onclick="show('heroScreen')">← العودة للموقع</button>
+  </div>
+</div>
+
+<!-- ══ ADMIN ══ -->
+<div id="adminScreen" class="screen">
+  <div class="aside">
+    <div class="aside-logo">✂️ الإدارة</div>
+    <div class="navit on"  onclick="aPage('pg_bookings',this)">📋 الحجوزات</div>
+    <div class="navit"     onclick="aPage('pg_services',this)">💈 الخدمات</div>
+    <div class="navit"     onclick="aPage('pg_coupons',this)">🎁 الكوبونات</div>
+    <div class="navit"     onclick="aPage('pg_settings',this)">⚙️ الإعدادات</div>
+    <div class="navit"     onclick="show('heroScreen')" style="margin-top:1rem;border-top:1px solid var(--dark4);padding-top:1rem">← الموقع</div>
+  </div>
+
+  <div class="amain">
+
+    <!-- حجوزات -->
+    <div class="apage active" id="pg_bookings">
+      <div class="apg-hd">
+        <h2>📋 الحجوزات</h2>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+          <input type="date" class="fi" style="width:auto" id="filterDate" onchange="renderBookings()">
+          <button class="btn btn-danger btn-sm" onclick="clearBookings()">🗑️ مسح الكل</button>
+        </div>
+      </div>
+      <div class="stats" id="statsEl"></div>
+      <div class="acard">
+        <div class="twrap">
+          <table>
+            <thead><tr><th>#</th><th>الاسم</th><th>الجوال</th><th>الخدمة</th><th>التاريخ</th><th>الوقت</th><th>الإجمالي</th><th>الكوبون</th></tr></thead>
+            <tbody id="bookTbl"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- خدمات -->
+    <div class="apage" id="pg_services">
+      <div class="apg-hd">
+        <h2>💈 الخدمات والأسعار</h2>
+        <button class="btn btn-gold" onclick="toggleForm('addSvcForm')">+ إضافة خدمة</button>
+      </div>
+      <div class="editrow" id="addSvcForm">
+        <div style="font-weight:700;color:var(--gold);margin-bottom:.8rem">خدمة جديدة</div>
+        <div class="fgrid">
+          <div class="fg"><label>اسم الخدمة</label><input class="fi" id="ns_name" placeholder="قصة شعر"></div>
+          <div class="fg"><label>السعر (ريال)</label><input type="number" class="fi" id="ns_price" placeholder="50"></div>
+          <div class="fg"><label>المدة (دقيقة)</label><input type="number" class="fi" id="ns_dur" placeholder="30"></div>
+          <div class="fg"><label>أيقونة Emoji</label><input class="fi" id="ns_ico" placeholder="✂️" maxlength="2"></div>
+        </div>
+        <div style="display:flex;gap:.6rem;margin-top:.8rem">
+          <button class="btn btn-gold" onclick="addService()">حفظ</button>
+          <button class="btn btn-ghost" onclick="toggleForm('addSvcForm')">إلغاء</button>
+        </div>
+      </div>
+      <div class="acard"><div id="svcList"></div></div>
+    </div>
+
+    <!-- كوبونات -->
+    <div class="apage" id="pg_coupons">
+      <div class="apg-hd">
+        <h2>🎁 الكوبونات</h2>
+        <button class="btn btn-gold" onclick="toggleForm('addCpnForm')">+ إضافة كوبون</button>
+      </div>
+      <div class="editrow" id="addCpnForm">
+        <div style="font-weight:700;color:var(--gold);margin-bottom:.8rem">كوبون جديد</div>
+        <div class="fgrid">
+          <div class="fg"><label>كود الكوبون</label><input class="fi" id="nc_code" placeholder="SAVE20" style="text-transform:uppercase"></div>
+          <div class="fg"><label>نوع الخصم</label>
+            <select class="fi" id="nc_type">
+              <option value="percent">نسبة مئوية %</option>
+              <option value="fixed">مبلغ ثابت ريال</option>
+            </select>
+          </div>
+          <div class="fg"><label>القيمة</label><input type="number" class="fi" id="nc_val" placeholder="10"></div>
+        </div>
+        <div style="display:flex;gap:.6rem;margin-top:.8rem">
+          <button class="btn btn-gold" onclick="addCoupon()">حفظ</button>
+          <button class="btn btn-ghost" onclick="toggleForm('addCpnForm')">إلغاء</button>
+        </div>
+      </div>
+      <div class="acard"><div id="cpnList"></div></div>
+    </div>
+
+    <!-- إعدادات -->
+    <div class="apage" id="pg_settings">
+      <div class="apg-hd"><h2>⚙️ الإعدادات</h2></div>
+      <div class="acard">
+        <div class="fg"><label>اسم المحل — يظهر في الصفحة الرئيسية</label><input class="fi" id="set_name" placeholder="حلاقة الأصالة"></div>
+        <div class="fg"><label>الوصف — يظهر تحت الاسم</label><input class="fi" id="set_sub" placeholder="تجربة فاخرة · مواعيد دقيقة"></div>
+        <button class="btn btn-gold" onclick="saveSettings()">💾 حفظ — يتغير الموقع فوراً</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FAB + Toast -->
+<button class="adm-fab" onclick="show('pwScreen')">⚙️ إدارة</button>
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════
+// STORAGE
+// ════════════════════════════════
+const DEF = {
+  services:[
+    {id:1,name:'قصة شعر',price:50,dur:30,ico:'💈'},
+    {id:2,name:'حلاقة دقن',price:40,dur:20,ico:'🪒'},
+    {id:3,name:'قصة + دقن',price:80,dur:50,ico:'✂️'},
+    {id:4,name:'قصة أطفال',price:35,dur:25,ico:'👦'},
+    {id:5,name:'تشكيل لحية',price:45,dur:30,ico:'🧔'},
+    {id:6,name:'صبغة شعر',price:120,dur:60,ico:'🎨'},
+  ],
+  coupons:[
+    {id:1,code:'WELCOME10',type:'percent',val:10},
+    {id:2,code:'SAVE20',type:'fixed',val:20},
+  ],
+  bookings:[],
+  settings:{name:'حلاقة الأصالة',sub:'تجربة فاخرة · مواعيد دقيقة · خدمة متميزة'},
+};
+
+function ld(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):DEF[k]}catch{return DEF[k]}}
+function sv(k,d){localStorage.setItem(k,JSON.stringify(d))}
+
+// ════════════════════════════════
+// SCREENS
+// ════════════════════════════════
+function show(id){
+  ['heroScreen','bookingScreen','successScreen','pwScreen','adminScreen']
+    .forEach(s=>document.getElementById(s).classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ════════════════════════════════
+// APPLY SETTINGS → HERO
+// ════════════════════════════════
+function applySettings(){
+  const s=ld('settings');
+  document.getElementById('heroTitle').textContent = s.name||'حلاقة الأصالة';
+  document.getElementById('heroSub').textContent   = s.sub||'';
+  document.getElementById('pageTitle').textContent = s.name||'حلاقة الأصالة';
+}
+
+// ════════════════════════════════
+// BOOKING
+// ════════════════════════════════
+let B={service:null,date:null,time:null,coupon:null,discPct:0,discAmt:0};
+
+const SLOTS=['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30',
+             '13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30',
+             '17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30'];
+
+function startBooking(){
+  B={service:null,date:null,time:null,coupon:null,discPct:0,discAmt:0};
+  // render services fresh from storage each time
+  const svcs=ld('services');
+  document.getElementById('svcGrid').innerHTML=svcs.map(s=>`
+    <div class="svc-card" id="sc${s.id}" onclick="pickSvc(${s.id})">
+      <span class="ico">${s.ico||'✂️'}</span>
+      <div class="sname">${s.name}</div>
+      <div class="sprice">${s.price} ريال</div>
+      <div class="sdur">${s.dur||30} دقيقة</div>
+    </div>`).join('');
+  document.getElementById('n1').disabled=true;
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('dateIn').min=today;
+  document.getElementById('dateIn').value=today;
+  document.getElementById('slotsWrap').style.display='none';
+  document.getElementById('n2').disabled=true;
+  document.getElementById('nameIn').value='';
+  document.getElementById('phoneIn').value='';
+  document.getElementById('cpnIn').value='';
+  document.getElementById('cpnMsg').textContent='';
+  goStepDirect(1);
+  show('bookingScreen');
+}
+
+function pickSvc(id){
+  B.service=ld('services').find(s=>s.id===id);
+  document.querySelectorAll('.svc-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('sc'+id).classList.add('sel');
+  document.getElementById('n1').disabled=false;
+}
+
+function loadSlots(){
+  B.date=document.getElementById('dateIn').value;
+  B.time=null;
+  document.getElementById('n2').disabled=true;
+  const wrap=document.getElementById('slotsWrap');
+  wrap.style.display='block';
+  const taken=ld('bookings').filter(b=>b.date===B.date).map(b=>b.time);
+  document.getElementById('slotsEl').innerHTML=SLOTS.map(t=>{
+    const busy=taken.includes(t);
+    return `<div class="slot${busy?' taken':''}" id="sl${t.replace(':','-')}"
+      ${busy?'':'onclick="pickSlot(\''+t+'\')"'}>${t}</div>`;
+  }).join('');
+}
+
+function pickSlot(t){
+  B.time=t;
+  document.querySelectorAll('.slot').forEach(s=>s.classList.remove('sel'));
+  document.getElementById('sl'+t.replace(':','-')).classList.add('sel');
+  document.getElementById('n2').disabled=false;
+}
+
+function applyCoupon(){
+  const code=document.getElementById('cpnIn').value.trim().toUpperCase();
+  const msg=document.getElementById('cpnMsg');
+  const cpn=ld('coupons').find(c=>c.code.toUpperCase()===code);
+  if(!cpn){msg.className='cpnmsg err';msg.textContent='❌ الكود غير صحيح';B.coupon=null;B.discPct=0;B.discAmt=0;return;}
+  B.coupon=cpn.code;
+  if(cpn.type==='percent'){B.discPct=cpn.val;B.discAmt=0;msg.className='cpnmsg ok';msg.textContent=`✅ خصم ${cpn.val}% تم تطبيقه!`;}
+  else{B.discAmt=cpn.val;B.discPct=0;msg.className='cpnmsg ok';msg.textContent=`✅ خصم ${cpn.val} ريال تم تطبيقه!`;}
+}
+
+function goStep(n){
+  if(n===4){
+    const name=document.getElementById('nameIn').value.trim();
+    const phone=document.getElementById('phoneIn').value.trim();
+    if(!name||!phone){toast('⚠️ أدخل الاسم ورقم الجوال');return;}
+    buildSum(name,phone);
+  }
+  goStepDirect(n);
+}
+
+function goStepDirect(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  for(let i=1;i<=4;i++){
+    const d=document.getElementById('d'+i);
+    d.className='pdot'+(i<n?' done':i===n?' active':'');
+  }
+  window.scrollTo({top:0});
+}
+
+function buildSum(name,phone){
+  const p=B.service.price;
+  const disc=B.discPct>0?Math.round(p*B.discPct/100):B.discAmt;
+  const total=Math.max(0,p-disc);
+  let h=`
+    <div class="srow"><span>الخدمة</span><span>${B.service.name}</span></div>
+    <div class="srow"><span>التاريخ</span><span>${B.date}</span></div>
+    <div class="srow"><span>الوقت</span><span>${B.time}</span></div>
+    <div class="srow"><span>الاسم</span><span>${name}</span></div>
+    <div class="srow"><span>الجوال</span><span>${phone}</span></div>
+    <div class="srow"><span>السعر</span><span>${p} ريال</span></div>`;
+  if(disc>0)h+=`<div class="srow disc"><span>الخصم (${B.coupon})</span><span>- ${disc} ريال</span></div>`;
+  h+=`<div class="srow total"><span>الإجمالي</span><span>${total} ريال</span></div>`;
+  document.getElementById('sumEl').innerHTML=h;
+}
+
+function confirmBooking(){
+  const name=document.getElementById('nameIn').value.trim();
+  const phone=document.getElementById('phoneIn').value.trim();
+  const p=B.service.price;
+  const disc=B.discPct>0?Math.round(p*B.discPct/100):B.discAmt;
+  const total=Math.max(0,p-disc);
+  const bks=ld('bookings');
+  bks.push({id:Date.now(),name,phone,service:B.service.name,date:B.date,time:B.time,price:p,discount:disc,total,coupon:B.coupon||''});
+  sv('bookings',bks);
+  document.getElementById('sucDetail').textContent=`${name} | ${B.service.name} | ${B.date} الساعة ${B.time} | ${total} ريال`;
+  show('successScreen');
+}
+
+function resetAll(){show('heroScreen')}
+
+// ════════════════════════════════
+// PASSWORD
+// ════════════════════════════════
+function checkPw(){
+  if(document.getElementById('pwIn').value==='3536'){
+    document.getElementById('pwIn').value='';
+    document.getElementById('pwErr').textContent='';
+    openAdmin();
+  } else {
+    document.getElementById('pwErr').textContent='❌ كلمة المرور غير صحيحة';
+    document.getElementById('pwIn').value='';
+  }
+}
+
+// ════════════════════════════════
+// ADMIN
+// ════════════════════════════════
+function openAdmin(){
+  show('adminScreen');
+  renderBookings();
+  renderSvcList();
+  renderCpnList();
+  const s=ld('settings');
+  document.getElementById('set_name').value=s.name||'';
+  document.getElementById('set_sub').value=s.sub||'';
+}
+
+function aPage(id,el){
+  document.querySelectorAll('.apage').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.navit').forEach(n=>n.classList.remove('on'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('on');
+}
+
+/* حجوزات */
+function renderBookings(){
+  const filter=document.getElementById('filterDate')?.value;
+  const all=ld('bookings');
+  let data=filter?all.filter(b=>b.date===filter):all;
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('statsEl').innerHTML=`
+    <div class="stat"><div class="lbl">إجمالي الحجوزات</div><div class="val">${all.length}</div></div>
+    <div class="stat"><div class="lbl">حجوزات اليوم</div><div class="val">${all.filter(b=>b.date===today).length}</div></div>
+    <div class="stat"><div class="lbl">الإيرادات (ريال)</div><div class="val">${all.reduce((s,b)=>s+(b.total||0),0)}</div></div>
+    <div class="stat"><div class="lbl">مع كوبون</div><div class="val">${all.filter(b=>b.coupon).length}</div></div>`;
+  const tb=document.getElementById('bookTbl');
+  if(!data.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">لا توجد حجوزات</td></tr>';return;}
+  tb.innerHTML=data.map((b,i)=>`
+    <tr>
+      <td>${i+1}</td><td>${b.name}</td><td>${b.phone}</td>
+      <td><span class="badge bg">${b.service}</span></td>
+      <td>${b.date}</td><td>${b.time}</td>
+      <td style="font-weight:700;color:var(--gold)">${b.total} ر</td>
+      <td>${b.coupon?`<span class="badge bb">${b.coupon}</span>`:'-'}</td>
+    </tr>`).join('');
+}
+
+function clearBookings(){
+  if(!confirm('مسح جميع الحجوزات؟'))return;
+  sv('bookings',[]);renderBookings();toast('🗑️ تم مسح الحجوزات');
+}
+
+/* خدمات */
+function renderSvcList(){
+  const svcs=ld('services');
+  const el=document.getElementById('svcList');
+  if(!svcs.length){el.innerHTML='<p style="color:var(--muted);text-align:center;padding:2rem">لا توجد خدمات</p>';return;}
+  el.innerHTML=svcs.map(s=>`
+    <div class="irow">
+      <div class="iico">${s.ico||'✂️'}</div>
+      <div class="iinfo">
+        <div class="iname">${s.name}</div>
+        <div class="imeta">${s.price} ريال · ${s.dur||30} دقيقة</div>
+      </div>
+      <div class="iacts">
+        <button class="btn btn-ghost btn-sm" onclick="openEditSvc(${s.id})">✏️ تعديل</button>
+        <button class="btn btn-danger btn-sm" onclick="delSvc(${s.id})">🗑️</button>
+      </div>
+    </div>
+    <div class="editrow" id="esvc${s.id}">
+      <div class="fgrid">
+        <div class="fg"><label>الاسم</label><input class="fi" id="es_n${s.id}" value="${s.name}"></div>
+        <div class="fg"><label>السعر</label><input type="number" class="fi" id="es_p${s.id}" value="${s.price}"></div>
+        <div class="fg"><label>المدة</label><input type="number" class="fi" id="es_d${s.id}" value="${s.dur||30}"></div>
+        <div class="fg"><label>أيقونة</label><input class="fi" id="es_i${s.id}" value="${s.ico||'✂️'}" maxlength="2"></div>
+      </div>
+      <div style="display:flex;gap:.6rem;margin-top:.7rem">
+        <button class="btn btn-gold" onclick="saveSvc(${s.id})">💾 حفظ</button>
+        <button class="btn btn-ghost" onclick="openEditSvc(${s.id})">إلغاء</button>
+      </div>
+    </div>`).join('');
+}
+
+function openEditSvc(id){document.getElementById('esvc'+id).classList.toggle('on')}
+
+function saveSvc(id){
+  const svcs=ld('services');
+  const s=svcs.find(x=>x.id===id);
+  s.name=document.getElementById('es_n'+id).value.trim();
+  s.price=parseFloat(document.getElementById('es_p'+id).value)||0;
+  s.dur=parseInt(document.getElementById('es_d'+id).value)||30;
+  s.ico=document.getElementById('es_i'+id).value||'✂️';
+  sv('services',svcs);
+  renderSvcList();
+  toast('✅ تم حفظ الخدمة — ستظهر في الموقع فوراً');
+}
+
+function delSvc(id){
+  if(!confirm('حذف هذه الخدمة؟'))return;
+  sv('services',ld('services').filter(s=>s.id!==id));
+  renderSvcList();toast('🗑️ تم الحذف');
+}
+
+function toggleForm(id){document.getElementById(id).classList.toggle('on')}
+
+function addService(){
+  const name=document.getElementById('ns_name').value.trim();
+  const price=parseFloat(document.getElementById('ns_price').value)||0;
+  const dur=parseInt(document.getElementById('ns_dur').value)||30;
+  const ico=document.getElementById('ns_ico').value||'✂️';
+  if(!name||!price){toast('⚠️ أدخل الاسم والسعر');return;}
+  const svcs=ld('services');
+  svcs.push({id:svcs.length?Math.max(...svcs.map(s=>s.id))+1:1,name,price,dur,ico});
+  sv('services',svcs);
+  renderSvcList();
+  toggleForm('addSvcForm');
+  ['ns_name','ns_price','ns_dur','ns_ico'].forEach(id=>document.getElementById(id).value='');
+  toast('✅ تمت إضافة الخدمة');
+}
+
+/* كوبونات */
+function renderCpnList(){
+  const cpns=ld('coupons');
+  const el=document.getElementById('cpnList');
+  if(!cpns.length){el.innerHTML='<p style="color:var(--muted);text-align:center;padding:2rem">لا توجد كوبونات</p>';return;}
+  el.innerHTML=cpns.map(c=>`
+    <div class="irow">
+      <div class="iico">🎁</div>
+      <div class="iinfo">
+        <div class="iname"><span class="badge bb">${c.code}</span></div>
+        <div class="imeta">${c.type==='percent'?c.val+'% خصم':c.val+' ريال خصم'}</div>
+      </div>
+      <div class="iacts">
+        <button class="btn btn-ghost btn-sm" onclick="openEditCpn(${c.id})">✏️ تعديل</button>
+        <button class="btn btn-danger btn-sm" onclick="delCpn(${c.id})">🗑️</button>
+      </div>
+    </div>
+    <div class="editrow" id="ecpn${c.id}">
+      <div class="fgrid">
+        <div class="fg"><label>الكود</label><input class="fi" id="ec_c${c.id}" value="${c.code}" style="text-transform:uppercase"></div>
+        <div class="fg"><label>النوع</label>
+          <select class="fi" id="ec_t${c.id}">
+            <option value="percent"${c.type==='percent'?' selected':''}>نسبة %</option>
+            <option value="fixed"${c.type==='fixed'?' selected':''}>مبلغ ثابت</option>
+          </select>
+        </div>
+        <div class="fg"><label>القيمة</label><input type="number" class="fi" id="ec_v${c.id}" value="${c.val}"></div>
+      </div>
+      <div style="display:flex;gap:.6rem;margin-top:.7rem">
+        <button class="btn btn-gold" onclick="saveCpn(${c.id})">💾 حفظ</button>
+        <button class="btn btn-ghost" onclick="openEditCpn(${c.id})">إلغاء</button>
+      </div>
+    </div>`).join('');
+}
+
+function openEditCpn(id){document.getElementById('ecpn'+id).classList.toggle('on')}
+
+function saveCpn(id){
+  const cpns=ld('coupons');
+  const c=cpns.find(x=>x.id===id);
+  c.code=document.getElementById('ec_c'+id).value.toUpperCase().trim();
+  c.type=document.getElementById('ec_t'+id).value;
+  c.val=parseFloat(document.getElementById('ec_v'+id).value)||0;
+  sv('coupons',cpns);renderCpnList();toast('✅ تم حفظ الكوبون');
+}
+
+function delCpn(id){
+  if(!confirm('حذف هذا الكوبون؟'))return;
+  sv('coupons',ld('coupons').filter(c=>c.id!==id));
+  renderCpnList();toast('🗑️ تم الحذف');
+}
+
+function addCoupon(){
+  const code=document.getElementById('nc_code').value.trim().toUpperCase();
+  const type=document.getElementById('nc_type').value;
+  const val=parseFloat(document.getElementById('nc_val').value)||0;
+  if(!code||!val){toast('⚠️ أدخل الكود والقيمة');return;}
+  const cpns=ld('coupons');
+  if(cpns.find(c=>c.code===code)){toast('⚠️ الكود موجود مسبقاً');return;}
+  cpns.push({id:cpns.length?Math.max(...cpns.map(c=>c.id))+1:1,code,type,val});
+  sv('coupons',cpns);renderCpnList();
+  toggleForm('addCpnForm');
+  ['nc_code','nc_val'].forEach(id=>document.getElementById(id).value='');
+  toast('✅ تمت إضافة الكوبون');
+}
+
+/* إعدادات */
+function saveSettings(){
+  const name=document.getElementById('set_name').value.trim();
+  const sub=document.getElementById('set_sub').value.trim();
+  sv('settings',{name,sub});
+  applySettings(); // ← يطبق التغيير فوراً
+  toast('✅ تم الحفظ! الاسم والوصف تغيّرا في الموقع الآن');
+}
+
+/* Toast */
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// ════════════════════════════════
+// INIT
+// ════════════════════════════════
+applySettings();
+</script>
+</body>
+</html>
