@@ -238,26 +238,17 @@
   .item-card.completed { opacity: 0.65; }
   .item-card.completed .item-title { text-decoration: line-through; color: var(--muted); }
 
-  /* الكارت: صورة يمين، معلومات يسار */
+  /* الكارت: معلومات يسار، صورة يمين */
   .item-main {
-    display: grid;
-    grid-template-columns: auto 1fr;
+    display: flex;
     gap: 12px;
     padding: 14px 14px 12px;
-    align-items: start;
-  }
-
-  /* يمين: الصورة + أزرار */
-  .item-right {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
+    align-items: flex-start;
   }
 
   /* يسار: المعلومات + سيزونات */
   .item-info-block {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -269,6 +260,15 @@
     align-items: baseline;
     gap: 8px;
     flex-wrap: wrap;
+  }
+
+  /* يمين: الصورة + أزرار */
+  .item-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
   }
 
   .item-poster {
@@ -738,13 +738,6 @@ function renderCard(item) {
   return `
     <div class="item-card ${item.completed ? 'completed' : ''}" id="card-${item.id}">
       <div class="item-main">
-        <div class="item-right">
-          ${poster}
-          <div class="item-actions">
-            ${checkBtn}
-            ${delBtn}
-          </div>
-        </div>
         <div class="item-info-block">
           <div class="item-title-row">
             <span class="item-title">${item.title}</span>
@@ -753,6 +746,13 @@ function renderCard(item) {
           <div class="item-badges">${typeLabel}${imdb}</div>
           ${ratingHtml}
           ${item.seasons ? renderSeasons(item) : ''}
+        </div>
+        <div class="item-right">
+          ${poster}
+          <div class="item-actions">
+            ${checkBtn}
+            ${delBtn}
+          </div>
         </div>
       </div>
     </div>`;
