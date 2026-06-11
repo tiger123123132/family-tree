@@ -240,10 +240,32 @@
 
   .item-main {
     display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 16px;
-    cursor: pointer;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .item-info-block {
+    flex: 1;
+    min-width: 0;
+    padding-top: 2px;
+  }
+
+  .item-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+
+  .item-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
   }
 
   .item-poster {
@@ -263,11 +285,8 @@
     background: var(--surface2);
   }
 
-  .item-body { flex: 1; min-width: 0; }
-  .item-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
   .item-title { font-size: 1rem; font-weight: 700; }
   .item-year { font-size: 0.78rem; color: var(--muted); }
-
   .item-badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .badge {
     font-size: 0.7rem;
@@ -282,8 +301,7 @@
   .item-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
+    gap: 6px;
   }
 
   .my-rating {
@@ -350,9 +368,7 @@
     padding: 0 16px 14px 16px;
     border-top: 1px solid var(--border);
     background: rgba(0,0,0,0.2);
-    display: none;
   }
-  .seasons-panel.open { display: block; }
 
   .seasons-label {
     font-size: 0.75rem;
@@ -362,31 +378,57 @@
   }
 
   .seasons-grid {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
     gap: 8px;
   }
 
-  .season-pill {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    border-radius: 50px;
-    border: 1.5px solid var(--border);
+  .season-box {
     background: var(--surface2);
-    font-size: 0.8rem;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 6px;
+    text-align: center;
     cursor: pointer;
     transition: all 0.2s;
     user-select: none;
   }
-  .season-pill:hover { border-color: var(--accent); }
-  .season-pill.done {
+  .season-box:hover { border-color: var(--accent); }
+  .season-box.done {
     background: rgba(76,175,130,0.12);
     border-color: var(--green);
-    color: var(--green);
   }
-  .season-check { font-size: 0.85rem; }
+
+  .season-num {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .season-box.done .season-num { color: var(--green); }
+
+  .season-check-icon {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .season-box.done .season-check-icon { color: var(--green); }
+
+  .season-rating-row { margin-top: 2px; }
+  .season-rate-select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.72rem;
+    padding: 2px 2px;
+    cursor: pointer;
+    outline: none;
+    text-align: center;
+  }
+  .season-rate-select:focus { border-color: var(--accent); }
 
   /* EMPTY */
   .empty-state {
@@ -653,6 +695,14 @@ function render() {
   updateStats();
 }
 
+function getAvgSeasonRating(item) {
+  if (!item.seasons) return null;
+  const rated = item.seasons.filter(s => s.rating);
+  if (!rated.length) return null;
+  const avg = rated.reduce((sum, s) => sum + s.rating, 0) / rated.length;
+  return avg.toFixed(1);
+}
+
 function renderCard(item) {
   const poster = item.poster
     ? `<img class="item-poster" src="${item.poster}" alt="" onerror="this.outerHTML='<div class=\\"item-poster no-img\\">${item.media_type==='movie'?'🎬':'📺'}</div>'">`
@@ -664,58 +714,110 @@ function renderCard(item) {
 
   const imdb = item.imdb ? `<span class="badge badge-imdb">⭐ IMDB ${item.imdb}</span>` : '';
 
-  const ratingHtml = `
-    <div class="my-rating" onclick="event.stopPropagation()">
-      ${item.myRating ? `<span class="rated-val">⭐${item.myRating}</span>` : `<span>تقييمي</span>`}
-      <select onchange="setRating(${item.id}, this.value)">
-        <option value="">—</option>
-        ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}" ${item.myRating==n?'selected':''}>${n}</option>`).join('')}
-      </select>
-    </div>`;
+  // For TV: show avg season rating; for movie: show manual rating picker
+  let ratingHtml = '';
+  if (item.media_type === 'tv') {
+    const avg = getAvgSeasonRating(item);
+    ratingHtml = avg
+      ? `<div class="my-rating"><span style="color:var(--muted);font-size:0.75rem">تقييمي</span><span class="rated-val">⭐${avg}</span></div>`
+      : `<div class="my-rating"><span style="color:var(--muted);font-size:0.75rem">قيّم السيزونات</span></div>`;
+  } else {
+    ratingHtml = `
+      <div class="my-rating" onclick="event.stopPropagation()">
+        ${item.myRating ? `<span class="rated-val">⭐${item.myRating}</span>` : `<span>تقييمي</span>`}
+        <select onchange="setRating(${item.id}, this.value)">
+          <option value="">—</option>
+          ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}" ${item.myRating==n?'selected':''}>${n}</option>`).join('')}
+        </select>
+      </div>`;
+  }
 
   const checkBtn = `<button class="check-btn ${item.completed ? 'done' : ''}" onclick="toggleDone(${item.id});event.stopPropagation()" title="${item.completed ? 'إلغاء' : 'خلصت!'}">✓</button>`;
-  const delBtn = `<button class="delete-btn" onclick="deleteItem(${item.id});event.stopPropagation()" title="حذف">✕</button>`;
+  const delBtn = `<button class="delete-btn" onclick="confirmDelete(${item.id});event.stopPropagation()" title="حذف">✕</button>`;
 
   const seasonsHtml = item.seasons ? renderSeasons(item) : '';
-  const hasSeasonsOpen = item.seasonsOpen ? 'open' : '';
 
   return `
     <div class="item-card ${item.completed ? 'completed' : ''}" id="card-${item.id}">
-      <div class="item-main" ${item.seasons ? `onclick="toggleSeasons(${item.id})"` : ''}>
-        ${poster}
-        <div class="item-body">
-          <div class="item-top">
+      <div class="item-main">
+        <div class="item-info-block">
+          <div class="item-title-row">
             <span class="item-title">${item.title}</span>
             ${item.year ? `<span class="item-year">${item.year}</span>` : ''}
           </div>
           <div class="item-badges">
             ${typeLabel}
             ${imdb}
-            ${item.seasons ? `<span class="badge" style="background:rgba(100,100,120,0.2);color:var(--muted)">${item.seasons.length} سيزون ${item.seasonsOpen ? '▲' : '▼'}</span>` : ''}
           </div>
         </div>
-        <div class="item-actions">
-          ${ratingHtml}
-          ${checkBtn}
-          ${delBtn}
+        <div class="item-right">
+          ${poster}
+          <div class="item-actions">
+            ${ratingHtml}
+            ${checkBtn}
+            ${delBtn}
+          </div>
         </div>
       </div>
-      ${item.seasons ? `<div class="seasons-panel ${hasSeasonsOpen}" id="seasons-${item.id}">${seasonsHtml}</div>` : ''}
+      ${item.seasons ? `<div class="seasons-panel">${seasonsHtml}</div>` : ''}
     </div>`;
 }
 
 function renderSeasons(item) {
   if (!item.seasons) return '';
   return `
-    <div class="seasons-label">السيزونات — اضغط على أي سيزون عند الانتهاء منه</div>
+    <div class="seasons-label">اضغط على السيزون عند الانتهاء منه — وقيّمه</div>
     <div class="seasons-grid">
       ${item.seasons.map(s => `
-        <div class="season-pill ${s.done ? 'done' : ''}" onclick="toggleSeason(${item.id}, ${s.number});event.stopPropagation()">
-          <span class="season-check">${s.done ? '✓' : '○'}</span>
-          <span>سيزون ${s.number}</span>
+        <div class="season-box ${s.done ? 'done' : ''}" onclick="toggleSeason(${item.id}, ${s.number});event.stopPropagation()">
+          <div class="season-num">S${s.number}</div>
+          <div class="season-check-icon">${s.done ? '✓' : '○'}</div>
+          <div class="season-rating-row" onclick="event.stopPropagation()">
+            <select class="season-rate-select" onchange="setSeasonRating(${item.id},${s.number},this.value)">
+              <option value="">—</option>
+              ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${s.rating==n?'selected':''}>${n}</option>`).join('')}
+            </select>
+          </div>
         </div>
       `).join('')}
     </div>`;
+}
+
+// ── CONFIRM DELETE MODAL ──────────────────────────────────
+function confirmDelete(id) {
+  const item = watchlist.find(i => i.id === id);
+  if (!item) return;
+  const existing = document.getElementById('confirm-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'confirm-modal';
+  modal.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  `;
+  modal.innerHTML = `
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:18px;padding:28px 24px;max-width:320px;width:100%;text-align:center">
+      <div style="font-size:2rem;margin-bottom:12px">🗑</div>
+      <div style="font-size:1rem;font-weight:700;margin-bottom:8px">حذف "${item.title}"؟</div>
+      <div style="font-size:0.85rem;color:var(--muted);margin-bottom:24px">هذا الإجراء لا يمكن التراجع عنه</div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button onclick="document.getElementById('confirm-modal').remove()" style="flex:1;padding:10px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--text);font-family:'Cairo',sans-serif;font-size:0.9rem;cursor:pointer">إلغاء</button>
+        <button onclick="doDelete(${id})" style="flex:1;padding:10px;border-radius:50px;border:none;background:var(--red);color:#fff;font-family:'Cairo',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer">حذف</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+function doDelete(id) {
+  const item = watchlist.find(i => i.id === id);
+  const modal = document.getElementById('confirm-modal');
+  if (modal) modal.remove();
+  if (!item) return;
+  watchlist = watchlist.filter(i => i.id !== id);
+  save(); render();
+  showToast(`🗑 حُذف "${item.title}"`);
 }
 
 // ── ACTIONS ───────────────────────────────────────────────
@@ -727,20 +829,12 @@ function toggleDone(id) {
   showToast(item.completed ? `✅ "${item.title}" خلصت!` : `↩ إلغاء التحديد`);
 }
 
-function toggleSeasons(id) {
-  const item = watchlist.find(i => i.id === id);
-  if (!item) return;
-  item.seasonsOpen = !item.seasonsOpen;
-  save(); render();
-}
-
 function toggleSeason(itemId, seasonNum) {
   const item = watchlist.find(i => i.id === itemId);
   if (!item || !item.seasons) return;
   const s = item.seasons.find(s => s.number === seasonNum);
   if (s) s.done = !s.done;
 
-  // Auto-complete if all seasons done
   if (item.seasons.every(s => s.done)) {
     item.completed = true;
     showToast(`🏆 "${item.title}" اكتمل كل السيزونات!`);
@@ -751,19 +845,19 @@ function toggleSeason(itemId, seasonNum) {
   save(); render();
 }
 
+function setSeasonRating(itemId, seasonNum, val) {
+  const item = watchlist.find(i => i.id === itemId);
+  if (!item || !item.seasons) return;
+  const s = item.seasons.find(s => s.number === seasonNum);
+  if (s) s.rating = val ? parseInt(val) : null;
+  save(); render();
+}
+
 function setRating(id, val) {
   const item = watchlist.find(i => i.id === id);
   if (!item) return;
   item.myRating = val ? parseInt(val) : null;
   save(); render();
-}
-
-function deleteItem(id) {
-  const item = watchlist.find(i => i.id === id);
-  if (!item) return;
-  watchlist = watchlist.filter(i => i.id !== id);
-  save(); render();
-  showToast(`🗑 حُذف "${item.title}"`);
 }
 
 // ── UTILS ──────────────────────────────────────────────────
