@@ -238,16 +238,25 @@
   .item-card.completed { opacity: 0.65; }
   .item-card.completed .item-title { text-decoration: line-through; color: var(--muted); }
 
-  /* الكارت: صفين — فوق: صورة+معلومات | تحت: سيزونات */
+  /* الكارت: صورة يمين، معلومات يسار */
   .item-main {
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 10px;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
     padding: 14px 14px 12px;
     align-items: start;
   }
 
-  /* يسار فوق: الاسم والمعلومات */
+  /* يمين: الصورة + أزرار */
+  .item-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* يسار: المعلومات + سيزونات */
   .item-info-block {
     display: flex;
     flex-direction: column;
@@ -260,14 +269,6 @@
     align-items: baseline;
     gap: 8px;
     flex-wrap: wrap;
-  }
-
-  /* يمين فوق: الصورة + أزرار */
-  .item-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
   }
 
   .item-poster {
@@ -363,15 +364,13 @@
 
   /* SEASONS — تحت الكارت */
   .seasons-panel {
-    padding: 0 14px 12px;
-    border-top: 1px solid var(--border);
-    background: rgba(0,0,0,0.15);
+    margin-top: 6px;
   }
 
   .seasons-label {
     font-size: 0.72rem;
     color: var(--muted);
-    margin: 8px 0 7px;
+    margin-bottom: 6px;
     font-weight: 600;
   }
 
@@ -481,10 +480,9 @@
   @media (max-width: 600px) {
     header { padding: 14px 16px; }
     .stats-bar { display: none; }
-    .item-main { padding: 10px 12px; gap: 10px; }
-    .item-poster { width: 40px; height: 56px; }
+    .item-main { padding: 10px 12px; }
+    .item-poster { width: 48px; height: 68px; }
     .delete-btn { opacity: 1; }
-    .seasons-grid { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
   }
 </style>
 </head>
@@ -740,14 +738,6 @@ function renderCard(item) {
   return `
     <div class="item-card ${item.completed ? 'completed' : ''}" id="card-${item.id}">
       <div class="item-main">
-        <div class="item-info-block">
-          <div class="item-title-row">
-            <span class="item-title">${item.title}</span>
-            ${item.year ? `<span class="item-year">${item.year}</span>` : ''}
-          </div>
-          <div class="item-badges">${typeLabel}${imdb}</div>
-          ${ratingHtml}
-        </div>
         <div class="item-right">
           ${poster}
           <div class="item-actions">
@@ -755,8 +745,16 @@ function renderCard(item) {
             ${delBtn}
           </div>
         </div>
+        <div class="item-info-block">
+          <div class="item-title-row">
+            <span class="item-title">${item.title}</span>
+            ${item.year ? `<span class="item-year">${item.year}</span>` : ''}
+          </div>
+          <div class="item-badges">${typeLabel}${imdb}</div>
+          ${ratingHtml}
+          ${item.seasons ? renderSeasons(item) : ''}
+        </div>
       </div>
-      ${item.seasons ? `<div class="seasons-panel">${seasonsHtml}</div>` : ''}
     </div>`;
 }
 
