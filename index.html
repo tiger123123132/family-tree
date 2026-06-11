@@ -301,10 +301,21 @@
   .badge-tv { background: rgba(76,175,130,0.15); color: var(--green); }
   .badge-imdb { background: rgba(229,185,75,0.1); color: var(--accent); border: 1px solid rgba(229,185,75,0.2); }
 
+  /* يمين (في RTL = يسار فيزيائياً): الصورة + أزرار */
+  .item-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    order: -1; /* يجعلها أول عنصر = يمين في RTL */
+  }
+
   .item-actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    direction: ltr; /* الأزرار تكون بترتيب طبيعي */
   }
 
   .my-rating {
@@ -348,19 +359,18 @@
   .delete-btn {
     width: 28px; height: 28px;
     border-radius: 50%;
-    border: none;
+    border: 1px solid var(--border);
     background: transparent;
     color: var(--muted);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.82rem;
+    font-size: 0.75rem;
     transition: all 0.2s;
-    opacity: 0;
+    flex-shrink: 0;
   }
-  .item-card:hover .delete-btn { opacity: 1; }
-  .delete-btn:hover { color: var(--red); }
+  .delete-btn:hover { color: var(--red); border-color: var(--red); }
 
   /* SEASONS — تحت الكارت */
   .seasons-panel {
@@ -730,10 +740,8 @@ function renderCard(item) {
       </div>`;
   }
 
-  const checkBtn = `<button class="check-btn ${item.completed ? 'done' : ''}" onclick="toggleDone(${item.id});event.stopPropagation()" title="${item.completed ? 'إلغاء' : 'خلصت!'}">✓</button>`;
-  const delBtn = `<button class="delete-btn" onclick="confirmDelete(${item.id});event.stopPropagation()" title="حذف">✕</button>`;
-
-  const seasonsHtml = item.seasons ? renderSeasons(item) : '';
+  const checkBtn = `<button class="check-btn ${item.completed ? 'done' : ''}" onclick="toggleDone(${item.id});event.stopPropagation()">✓</button>`;
+  const delBtn = `<button class="delete-btn" onclick="confirmDelete(${item.id});event.stopPropagation()">✕</button>`;
 
   return `
     <div class="item-card ${item.completed ? 'completed' : ''}" id="card-${item.id}">
