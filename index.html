@@ -488,9 +488,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const TMDB_KEY = '4b4e71f21d0df82d6a0c4a2e51a7c7a0';
-const TMDB_BASE = 'https://api.themoviedb.org/3';
-const IMG_BASE = 'https://image.tmdb.org/t/p/w92';
+const OMDB_KEY = '4c494130';
+const OMDB_BASE = 'https://www.omdbapi.com';
 
 let watchlist = JSON.parse(localStorage.getItem('watchlist_v3') || '[]');
 let searchType = 'all';
@@ -527,39 +526,32 @@ async function doSearch(query) {
   box.innerHTML = `<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
 
   try {
-    const endpoints = searchType === 'all'
-      ? ['movie', 'tv']
-      : [searchType];
+    // OMDb type filter: movie, series, or empty for all
+    const typeParam = searchType === 'movie' ? '&type=movie' : searchType === 'tv' ? '&type=series' : '';
+    const res = await fetch(`${OMDB_BASE}/?apikey=${OMDB_KEY}&s=${encodeURIComponent(query)}${typeParam}`);
+    const data = await res.json();
 
-    const results = await Promise.all(
-      endpoints.map(type =>
-        fetch(`${TMDB_BASE}/search/${type}?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}&language=ar`)
-          .then(r => r.json())
-          .then(d => (d.results || []).slice(0,5).map(i => ({...i, media_type: type})))
-      )
-    );
-
-    const merged = results.flat()
-      .sort((a,b) => (b.popularity||0) - (a.popularity||0))
-      .slice(0, 8);
-
-    if (!merged.length) {
+    if (data.Response === 'False' || !data.Search || !data.Search.length) {
       box.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.9rem">لا توجد نتائج</div>`;
       return;
     }
 
-    box.innerHTML = merged.map(item => {
-      const title = item.title || item.name;
-      const year = (item.release_date || item.first_air_date || '').slice(0,4);
-      const poster = item.poster_path ? `<img class="result-poster" src="${IMG_BASE}${item.poster_path}" alt="">` : `<div class="result-poster no-img">${item.media_type==='movie'?'🎬':'📺'}</div>`;
-      const typeLabel = item.media_type === 'movie' ? `<span class="result-type type-movie">فلم</span>` : `<span class="result-type type-tv">مسلسل</span>`;
-      const imdb = item.vote_average ? `<span class="result-imdb">⭐ ${item.vote_average.toFixed(1)}</span>` : '';
-      const alreadyAdded = watchlist.find(w => w.tmdbId === item.id && w.media_type === item.media_type);
-      return `<div class="result-item" onclick="addItem(${item.id},'${item.media_type}')">
+    const results = data.Search.slice(0, 8);
+
+    box.innerHTML = results.map(item => {
+      const mediaType = item.Type === 'series' ? 'tv' : 'movie';
+      const poster = item.Poster && item.Poster !== 'N/A'
+        ? `<img class="result-poster" src="${item.Poster}" alt="">`
+        : `<div class="result-poster no-img">${mediaType === 'movie' ? '🎬' : '📺'}</div>`;
+      const typeLabel = mediaType === 'movie'
+        ? `<span class="result-type type-movie">فلم</span>`
+        : `<span class="result-type type-tv">مسلسل</span>`;
+      const alreadyAdded = watchlist.find(w => w.imdbID === item.imdbID);
+      return `<div class="result-item" onclick="addItem('${item.imdbID}','${mediaType}')">
         ${poster}
         <div class="result-info">
-          <div class="result-title">${title} ${alreadyAdded ? '✓' : ''}</div>
-          <div class="result-meta">${typeLabel} ${year ? `<span>${year}</span>` : ''} ${imdb}</div>
+          <div class="result-title">${item.Title} ${alreadyAdded ? '✓' : ''}</div>
+          <div class="result-meta">${typeLabel} ${item.Year ? `<span>${item.Year}</span>` : ''}</div>
         </div>
       </div>`;
     }).join('');
@@ -573,31 +565,43 @@ function hideResults() {
 }
 
 // ── ADD ITEM ─────────────────────────────────────────────
-async function addItem(tmdbId, mediaType) {
+async function addItem(imdbID, mediaType) {
   hideResults();
   document.getElementById('searchInput').value = '';
 
-  if (watchlist.find(w => w.tmdbId === tmdbId && w.media_type === mediaType)) {
+  if (watchlist.find(w => w.imdbID === imdbID)) {
     showToast('موجود في قائمتك بالفعل ✓');
     return;
   }
 
   try {
-    const res = await fetch(`${TMDB_BASE}/${mediaType}/${tmdbId}?api_key=${TMDB_KEY}&language=ar`);
+    const res = await fetch(`${OMDB_BASE}/?apikey=${OMDB_KEY}&i=${imdbID}&plot=short`);
     const data = await res.json();
+
+    if (data.Response === 'False') { showToast('حدث خطأ، جرب مرة ثانية'); return; }
+
+    // Build seasons for series
+    let seasons = null;
+    if (mediaType === 'tv' && data.totalSeasons && parseInt(data.totalSeasons) > 0) {
+      const total = parseInt(data.totalSeasons);
+      seasons = Array.from({length: total}, (_, i) => ({
+        number: i + 1,
+        done: false
+      }));
+    }
 
     const item = {
       id: Date.now(),
-      tmdbId,
+      imdbID,
       media_type: mediaType,
-      title: data.title || data.name,
-      year: (data.release_date || data.first_air_date || '').slice(0,4),
-      poster: data.poster_path || null,
-      imdb: data.vote_average ? data.vote_average.toFixed(1) : null,
+      title: data.Title,
+      year: data.Year || '',
+      poster: (data.Poster && data.Poster !== 'N/A') ? data.Poster : null,
+      imdb: (data.imdbRating && data.imdbRating !== 'N/A') ? data.imdbRating : null,
       completed: false,
       myRating: null,
       addedAt: Date.now(),
-      seasons: mediaType === 'tv' ? buildSeasons(data) : null
+      seasons
     };
 
     watchlist.unshift(item);
@@ -607,17 +611,6 @@ async function addItem(tmdbId, mediaType) {
   } catch(e) {
     showToast('حدث خطأ، جرب مرة ثانية');
   }
-}
-
-function buildSeasons(data) {
-  const seasons = (data.seasons || [])
-    .filter(s => s.season_number > 0)
-    .map(s => ({
-      number: s.season_number,
-      name: s.name || `سيزون ${s.season_number}`,
-      done: false
-    }));
-  return seasons.length ? seasons : null;
 }
 
 // ── RENDER ────────────────────────────────────────────────
@@ -662,7 +655,7 @@ function render() {
 
 function renderCard(item) {
   const poster = item.poster
-    ? `<img class="item-poster" src="${IMG_BASE}${item.poster}" alt="" onerror="this.outerHTML='<div class=\\"item-poster no-img\\">${item.media_type==='movie'?'🎬':'📺'}</div>'">`
+    ? `<img class="item-poster" src="${item.poster}" alt="" onerror="this.outerHTML='<div class=\\"item-poster no-img\\">${item.media_type==='movie'?'🎬':'📺'}</div>'">`
     : `<div class="item-poster no-img">${item.media_type === 'movie' ? '🎬' : '📺'}</div>`;
 
   const typeLabel = item.media_type === 'movie'
